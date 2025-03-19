@@ -1,0 +1,18 @@
+{
+  "name": "emon-stack-cli",
+  "version": "1.0.0",
+  "type": "module",
+  "bin": {
+    "emon-stack": "index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "This is a cli tool which help to scaffolding nextjs project base on your preferences. Easy to use just follow the question and enjoy coding.",
+  "dependencies": {
+    "chalk": "^5.4.1",
+    "execa": "^9.5.2",
+    "fs-extra": "^11.3.0",
+    "inquirer": "^12.5.0"
+  }
+}
