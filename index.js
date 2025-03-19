@@ -63,7 +63,7 @@ async function scaffoldProject(answers) {
         console.log(chalk.blue('Adding trpc to this project...'));
     }
 
-    console.log(chalk.green('Project setup complete!'));
+    console.log(chalk.green('Project setup complete! Enjoy !!'));
 }
 
 async function main(){
