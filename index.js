@@ -1,75 +1,107 @@
 #!/usr/bin/env node
-import inquirer from "inquirer";
-import fs from "fs-extra"
+
+import {group, intro, log, outro, tasks,spinner} from "@clack/prompts";
+import {APP_OUTRO, APP_TITLE} from "./helper/const.js";
+import {
+    getAuthPreferences,
+    getCodePreferences, getFrontEndFramworkPreferences,
+    getOrmPreferences,
+    getProjectName,
+    getTrpcPreferences
+} from "./helper/prompt.js";
+import {addingTemplate} from "./helper/scaffolding.js";
 import {execa} from "execa";
-import chalk from "chalk";
-import path from "path";
-import {fileURLToPath} from "url"
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const templateDir = path.resolve(__dirname, "templates");
-
-const question = [
-    {
-        type: 'input',
-        name: 'project_name',
-        message: 'What is your project?',
-        default: 'emonsas',
-    },
-    {
-        type: 'list',
-        name: 'orm',
-        message: 'What is your database orm?',
-        choices: ['drizzle','prisma'],
-    },
-    {
-        type: 'list',
-        name: 'auth',
-        message: 'What is your auth system?',
-        choices: ['better-auth','next-auth','none'],
-    },
-    {
-        type: 'confirm',
-        name: 'trpc',
-        message: 'Do you want to use trpc?',
-        default: false,
-    }
-]
-
-async function scaffoldProject(answers) {
-    const { project_name,orm,trpc,auth } = answers;
-
-    console.log(chalk.green('Creating new project...'));
-    await execa('npx',['create-next-app@latest',project_name],{
-        stdio: 'inherit',
-    })
-    process.chdir(project_name)
-
-    if (orm === 'prisma') {
-        console.log(chalk.blue('Adding prisma...'));
-    }else if (orm === 'drizzle') {
-        console.log(chalk.blue('Adding prisma...'));
-    }
-
-    if(auth === 'better-auth'){
-        console.log(chalk.blue('Adding better auth...'));
-
-        fs.copySync(path.join(templateDir,'auth'),process.cwd());
-    }else if (auth === 'next-auth'){
-        console.log(chalk.blue('Adding next auth to project...'));
-    }
-
-    if(trpc){
-        console.log(chalk.blue('Adding trpc to this project...'));
-    }
-
-    console.log(chalk.green('Project setup complete!'));
-}
 
 async function main(){
-    const answers = await inquirer.prompt(question);
-    await scaffoldProject(answers);
+    intro(APP_TITLE)
+    const responses = await group({
+        projectName: () => getProjectName(),
+        codePreferences: () => getCodePreferences(),
+        framework: () => getFrontEndFramworkPreferences(),
+        orm: () => getOrmPreferences(),
+        auth: () => getAuthPreferences(),
+        trpc: () => getTrpcPreferences()
+    })
+
+    const next_js_args = [
+        'create-next-app@latest',
+        responses.projectName,
+        responses.codePreferences, // e.g., TypeScript or JavaScript
+        responses.framework,      // e.g., Tailwind CSS or plain CSS
+        '--no-eslint',
+        '--app',
+        '--turbopack',
+        '--no-src-dir',
+        '--no-import-alias',
+    ].filter(Boolean);
+
+    await tasks([
+        {
+            title: "Initializing the project...",
+            task: async () => {
+                const s = spinner();
+                s.start('Creating Next.js app...');
+                try {
+                    await execa('npx', next_js_args, { stdio: 'inherit' });
+                    process.chdir(responses.projectName);
+                    s.stop('Project initialized.');
+                } catch (error) {
+                    s.stop(`Failed: ${error.message}`);
+                    throw error;
+                }
+            }
+        },
+        {
+            title: "Adding ORM ...",
+            task: async () => {
+                const s = spinner();
+                s.start('Installing Drizzle ORM...');
+                try {
+                    await execa('npm', ['install', 'drizzle-orm'], { stdio: 'inherit' });
+                    s.stop('ORM added successfully.');
+                } catch (error) {
+                    s.stop(`Failed: ${error.message}`);
+                    throw error;
+                }
+            }
+        },
+        {
+            title: "Adding Authentication provider...",
+            task: async () => {
+                const s = spinner();
+                s.start('Adding authentication provider...');
+                try {
+                    if (responses.auth === 'better_auth') {
+                        await addingTemplate('auth');
+                        s.stop('Authentication provider added successfully.');
+                    } else if (responses.auth === 'none') {
+                        s.stop('No authentication provider added.');
+                    }
+                } catch (error) {
+                    s.stop(`Failed: ${error.message}`);
+                    throw error;
+                }
+            }
+        },
+        {
+            title: "Adding tRPC ...",
+            task: async () => {
+                const s = spinner();
+                s.start('Setting up tRPC...');
+                try {
+                    // Simulate a delay (e.g., for tRPC setup)
+                    await new Promise((resolve) => setTimeout(resolve, 3000));
+                    s.stop('tRPC added successfully.');
+                } catch (error) {
+                    s.stop(`Failed: ${error.message}`);
+                    throw error;
+                }
+            }
+        }
+    ])
+
+    outro(APP_OUTRO)
 }
 main().catch((err) => {
-    console.error(chalk.red('Error : ',err));
+    log.error(`Error : ${err}`)
 })
