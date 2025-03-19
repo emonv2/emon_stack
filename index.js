@@ -56,7 +56,7 @@ async function scaffoldProject(answers) {
 
         fs.copySync(path.join(templateDir,'auth'),process.cwd());
     }else if (auth === 'next-auth'){
-        console.log(chalk.blue('Adding next auth...'));
+        console.log(chalk.blue('Adding next auth to project...'));
     }
 
     if(trpc){
