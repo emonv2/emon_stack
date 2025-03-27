@@ -40,10 +40,10 @@ export async function getAuthPreferences(){
     return select({
         message: 'What authentication provider would you like to use?',
         options: [
-            {
-                value: 'none',
-                label: 'None'
-            },
+            // {
+            //     value: 'none',
+            //     label: 'None'
+            // },
             {
                 value: 'better_auth',
                 label: 'Better Auth'
@@ -63,8 +63,8 @@ export async function getFrontEndFramworkPreferences(){
         message: 'What Front-End Frameworks would you like to use?',
         options: [
             {
-                value: '--tailwind',
-                label: 'Tailwind css'
+                label: 'Tailwind css',
+                value: '--tailwind'
             }
         ],
     })

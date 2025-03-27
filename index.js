@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import {group, intro, log, outro, tasks,spinner} from "@clack/prompts";
-import {APP_OUTRO, APP_TITLE} from "./helper/const.js";
+import {APP_OUTRO, APP_TITLE, next_js_args, shadcn_ui_arg} from "./helper/const.js";
 import {
     getAuthPreferences,
     getCodePreferences, getFrontEndFramworkPreferences,
@@ -18,47 +18,22 @@ async function main(){
         projectName: () => getProjectName(),
         codePreferences: () => getCodePreferences(),
         framework: () => getFrontEndFramworkPreferences(),
-        orm: () => getOrmPreferences(),
         auth: () => getAuthPreferences(),
+        orm: () => getOrmPreferences(),
         trpc: () => getTrpcPreferences()
     })
-
-    const next_js_args = [
-        'create-next-app@latest',
-        responses.projectName,
-        responses.codePreferences, // e.g., TypeScript or JavaScript
-        responses.framework,      // e.g., Tailwind CSS or plain CSS
-        '--no-eslint',
-        '--app',
-        '--turbopack',
-        '--no-src-dir',
-        '--no-import-alias',
-    ].filter(Boolean);
 
     await tasks([
         {
             title: "Initializing the project...",
             task: async () => {
                 const s = spinner();
-                s.start('Creating Next.js app...');
+                s.start('Initializing the project...');
                 try {
-                    await execa('npx', next_js_args, { stdio: 'inherit' });
+                    await execa('npx', next_js_args);
                     process.chdir(responses.projectName);
+                    await execa('npx', shadcn_ui_arg);
                     s.stop('Project initialized.');
-                } catch (error) {
-                    s.stop(`Failed: ${error.message}`);
-                    throw error;
-                }
-            }
-        },
-        {
-            title: "Adding ORM ...",
-            task: async () => {
-                const s = spinner();
-                s.start('Installing Drizzle ORM...');
-                try {
-                    await execa('npm', ['install', 'drizzle-orm'], { stdio: 'inherit' });
-                    s.stop('ORM added successfully.');
                 } catch (error) {
                     s.stop(`Failed: ${error.message}`);
                     throw error;
@@ -77,6 +52,20 @@ async function main(){
                     } else if (responses.auth === 'none') {
                         s.stop('No authentication provider added.');
                     }
+                } catch (error) {
+                    s.stop(`Failed: ${error.message}`);
+                    throw error;
+                }
+            }
+        },
+        {
+            title: "Adding ORM ...",
+            task: async () => {
+                const s = spinner();
+                s.start('Adding ORM ...');
+                try {
+                    await execa('npm', ['install', 'drizzle-orm'], { stdio: 'inherit' });
+                    s.stop('ORM added successfully.');
                 } catch (error) {
                     s.stop(`Failed: ${error.message}`);
                     throw error;
