@@ -6,7 +6,7 @@
     "emon-stack": "index.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Md Jahidul Islam",
   "license": "ISC",
   "description": "This is a cli tool which help to scaffolding nextjs project base on your preferences. Easy to use just follow the question and enjoy coding.",
   "dependencies": {
